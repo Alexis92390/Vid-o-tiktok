@@ -24,3 +24,20 @@ python3 render.py --mute ../output/video_75bpm_sans_son.mp4 --bpm 75 --offset 0.
 ```
 `--bpm` : tempo du son, `--offset` : instant du 1er temps (s), `--no-text` : pas de paroles à l'écran,
 `--mute` : vidéo sans piste audio.
+
+## Vidéo narrée « Le poulpe » (voix off + sous-titres mot par mot)
+
+Résultat : `output/poulpe_tiktok.mp4` (49,6 s, 1080x1920, voix off FR, sous-titres incrustés, musique de fond).
+
+```bash
+pip install pycairo numpy piper-tts onnx onnxruntime
+cd generator
+python3 voix.py /tmp/work                       # voix Piper fr_FR-siwis + timeline.json (minutage exact de chaque mot)
+python3 musique.py 52 /tmp/work/musique.wav     # fond musical synthétisé (libre de droits)
+python3 poulpe.py /tmp/work ../output/poulpe_tiktok.mp4
+python3 poulpe.py /tmp/work /tmp/prev --preview # 2 images par scène pour vérifier vite
+```
+
+- Texte de la voix : `generator/script_poulpe.py` (`LINES` = une scène par phrase, `KEYWORDS` = mots en jaune).
+- Le modèle de voix (~63 Mo) est téléchargé depuis huggingface.co au premier lancement dans `generator/models/`.
+- Le minutage des sous-titres vient des durées de phonèmes internes au modèle (nœud `/Ceil` exposé dans le graphe ONNX).
