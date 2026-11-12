@@ -28,7 +28,8 @@ python3 render.py --mute ../output/video_75bpm_sans_son.mp4 --bpm 75 --offset 0.
 ## Version « interprétée » (la mascotte joue chaque passage d'un son existant)
 
 ```bash
-cd generator && python3 interpret.py ../output/video_interpretee_sans_son.mp4
+cd generator && python3 interpret.py ../output/video_interpretee_sans_son.mp4   # v1
+python3 interpret_v2.py ../output/video_v2_sans_son.mp4                    # v2 : mises en scène renouvelées
 ```
 Les scènes sont calées sur les timings du son (liste `TIMELINE` dans `interpret.py`).
 Aucune parole affichée : on ajoute le son et les sous-titres automatiques dans TikTok.
