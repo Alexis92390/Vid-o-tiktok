@@ -16,3 +16,11 @@ Personnaliser (dans `generator/render.py`) :
 - `HANDLE` : pseudo affiché à la fin.
 - Avec ta propre chanson : remplace `beat.wav` par ton audio et règle `BPM` dans `beat.py`
   pour que chaque ligne tombe sur une mesure.
+
+## Version calée sur un son existant (à ajouter ensuite dans TikTok)
+
+```bash
+python3 render.py --mute ../output/video_75bpm_sans_son.mp4 --bpm 75 --offset 0.26 --no-text --no-outro
+```
+`--bpm` : tempo du son, `--offset` : instant du 1er temps (s), `--no-text` : pas de paroles à l'écran,
+`--mute` : vidéo sans piste audio.

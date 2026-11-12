@@ -718,20 +718,26 @@ SCENES = {
 }
 
 # ---------------------------------------------------------------- rendu
+OFFSET = 0.0      # instant (s) du 1er temps
+SHOW_TEXT = True
+OUTRO = True
+
 def frame(c, t):
+    t = max(0.0, t - OFFSET)
     bar = int(t / BAR)
     lt = t - bar * BAR
     p = lt / BAR
+    bt = t % BEAT
     c.save()
-    # « punch » de caméra sur chaque mesure + léger zoom continu
-    z = 1 + 0.06 * math.exp(-lt / 0.12) + 0.025 * p
+    # « punch » de caméra sur chaque mesure, pulsation sur chaque temps, léger zoom continu
+    z = 1 + 0.06 * math.exp(-lt / 0.12) + 0.018 * math.exp(-bt / 0.09) + 0.025 * p
     c.translate(W / 2, H / 2); c.scale(z, z); c.translate(-W / 2, -H / 2)
     if bar < len(LINES):
         SCENES[LINES[bar][2]](c, t, lt, p)
     else:
         sc_outro(c, t, lt, p)
     c.restore()
-    if bar < len(LINES):
+    if SHOW_TEXT and bar < len(LINES):
         lyric_layer(c, bar, lt)
     # vignette
     g = cairo.RadialGradient(W / 2, H / 2, H * 0.3, W / 2, H / 2, H * 0.75)
@@ -742,22 +748,35 @@ def frame(c, t):
         src(c, hexc("FFFFFF"), 0.35 * (1 - lt / 0.1)); c.paint()
 
 def main():
-    wav, out = sys.argv[1], sys.argv[2]
-    preview = "--preview" in sys.argv
-    total = (len(LINES) + 1) * BAR
+    """render.py AUDIO|--mute SORTIE [--preview] [--bpm 75] [--offset 0.26] [--no-text] [--no-outro]"""
+    global BEAT, BAR, OFFSET, SHOW_TEXT, OUTRO
+    args = sys.argv[1:]
+    def opt(name, default):
+        return float(args[args.index(name) + 1]) if name in args else default
+    audio, out = args[0], args[1]
+    if "--bpm" in args:
+        BEAT = 60 / opt("--bpm", 90)
+        BAR = 4 * BEAT
+    OFFSET = opt("--offset", 0.0)
+    SHOW_TEXT = "--no-text" not in args
+    OUTRO = "--no-outro" not in args
+    mute = audio == "--mute"
+    total = OFFSET + (len(LINES) + (1 if OUTRO else 0)) * BAR
     surf = cairo.ImageSurface(cairo.FORMAT_ARGB32, W, H)
     c = cairo.Context(surf)
-    if preview:
-        for i in range(len(LINES) + 1):
-            frame(c, i * BAR + BAR * 0.7)
+    if "--preview" in args:
+        for i in range(len(LINES) + (1 if OUTRO else 0)):
+            frame(c, OFFSET + i * BAR + BAR * 0.7)
             surf.write_to_png(f"{out}_{i:02d}.png")
         return
-    n = int(total * FPS)
-    ff = subprocess.Popen([
-        "ffmpeg", "-y", "-v", "error", "-f", "rawvideo", "-pix_fmt", "bgra", "-s", f"{W}x{H}", "-r", str(FPS),
-        "-i", "-", "-i", wav, "-map", "0:v", "-map", "1:a", "-c:v", "libx264", "-preset", "medium", "-crf", "19",
-        "-pix_fmt", "yuv420p", "-c:a", "aac", "-b:a", "192k", "-shortest", "-movflags", "+faststart", out,
-    ], stdin=subprocess.PIPE)
+    n = int(round(total * FPS))
+    cmd = ["ffmpeg", "-y", "-v", "error", "-f", "rawvideo", "-pix_fmt", "bgra", "-s", f"{W}x{H}", "-r", str(FPS), "-i", "-"]
+    if mute:
+        cmd += ["-map", "0:v"]
+    else:
+        cmd += ["-i", audio, "-map", "0:v", "-map", "1:a", "-c:a", "aac", "-b:a", "192k", "-shortest"]
+    cmd += ["-c:v", "libx264", "-preset", "medium", "-crf", "19", "-pix_fmt", "yuv420p", "-movflags", "+faststart", out]
+    ff = subprocess.Popen(cmd, stdin=subprocess.PIPE)
     for f in range(n):
         frame(c, f / FPS)
         surf.flush()
