@@ -15,5 +15,7 @@ GUIDE.site = {
     "Au moindre doute, ou dès qu'un critère « Passer la main » est rempli, appelez le pharmacien."
   ],
 
+  "brouillon": "BROUILLON : le contenu médical de ce guide a été pré-rempli pour gagner du temps et doit être relu, corrigé et validé par la pharmacienne avant toute utilisation au comptoir. Supprimez cette ligne (ou mettez \"\") une fois tout validé.",
+
   "avertissement": "Contenu à usage interne, validé par {pharmacienne}. Ne pas diffuser aux patients."
 };

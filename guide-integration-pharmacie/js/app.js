@@ -65,6 +65,14 @@
     return el(ordered ? "ol" : "ul", { class: cls }, items.map(function (t) { return el("li", null, t); }));
   }
 
+  function shuffle(arr) {
+    for (var i = arr.length - 1; i > 0; i--) {
+      var j = Math.floor(Math.random() * (i + 1));
+      var t = arr[i]; arr[i] = arr[j]; arr[j] = t;
+    }
+    return arr;
+  }
+
   function hasTodo(obj) {
     return JSON.stringify(obj || "").indexOf(TODO) !== -1;
   }
@@ -183,6 +191,7 @@
       node: el("div", null, [
         el("h1", null, SITE_TITLE),
         el("p", { class: "callout callout-warning", role: "note" }, [el("strong", null, "Avertissement : "), avertissement()]),
+        site.brouillon ? el("p", { class: "callout callout-todo", role: "note" }, el("strong", null, site.brouillon)) : null,
         el("p", { class: "lead" }, site.presentation || TODO),
         el("h2", null, "Mode d'emploi"),
         list(site.modeEmploi, true, "steps-list"),
@@ -484,9 +493,11 @@
       var form = el("form", { class: "quiz-form", novalidate: true }, [
         el("fieldset", null, [
           el("legend", null, [el("span", { class: "step-counter" }, "Question " + (idx + 1) + " sur " + questions.length), el("span", { class: "quiz-question" }, item.question || TODO)]),
-          el("div", { class: "choices" }, choices.map(function (c, i) {
+          // Réponses mélangées à chaque affichage ; "value" garde la position d'origine (celle de bonneReponse).
+          el("div", { class: "choices" }, shuffle(choices.map(function (c, i) { return i; })).map(function (i) {
+            var c = choices[i];
             var cid = name + "-" + i;
-            return el("div", { class: "choice" }, [
+            return el("div", { class: "choice", "data-index": String(i) }, [
               el("input", { type: "radio", name: name, id: cid, value: String(i) }),
               el("label", { for: cid }, c)
             ]);
@@ -508,7 +519,8 @@
         var ok = chosen === good;
         if (ok) score++;
         form.querySelectorAll("input").forEach(function (inp) { inp.disabled = true; });
-        form.querySelectorAll(".choice").forEach(function (div, i) {
+        form.querySelectorAll(".choice").forEach(function (div) {
+          var i = Number(div.getAttribute("data-index"));
           if (i === good) { div.classList.add("is-correct"); div.appendChild(el("span", { class: "tag tag-ok" }, "Bonne réponse")); }
           else if (i === chosen) { div.classList.add("is-wrong"); div.appendChild(el("span", { class: "tag tag-ko" }, "Votre réponse")); }
         });

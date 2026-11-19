@@ -74,6 +74,7 @@ Fichier : `data/quiz.js`. Une question :
 
 - **`bonneReponse` compte à partir de 0** : 0 = première réponse, 1 = deuxième, 2 = troisième, 3 = quatrième. C'est l'erreur la plus fréquente : vérifier chaque question après modification en faisant le quiz.
 - `choix` accepte de 2 à 6 réponses.
+- L'ordre des réponses est mélangé à chaque affichage : inutile de varier vous-même la position de la bonne réponse. `bonneReponse` se réfère toujours à l'ordre écrit dans le fichier.
 - Pour ajouter une question : copier un bloc `{ ... }`, le coller dans la liste `"questions"` avec une virgule. Le nombre de questions s'adapte automatiquement.
 - Si vous changez beaucoup un quiz, les anciens scores restent affichés : demander aux apprentis de cliquer sur « Effacer mes résultats ».
 
